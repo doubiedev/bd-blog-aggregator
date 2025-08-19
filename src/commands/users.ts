@@ -17,7 +17,7 @@ export async function handlerLogin(cmdName: string, ...args: string[]) {
 }
 
 export async function handlerRegister(cmdName: string, ...args: string[]) {
-    if (args.length != 1) {
+    if (args.length !== 1) {
         throw new Error(`usage: ${cmdName} <name>`);
     }
 
