@@ -1,5 +1,5 @@
-import { setUser } from "../config";
-import { createUser, getUser } from "../lib/db/queries/users";
+import { readConfig, setUser } from "../config";
+import { createUser, getUser, getUsers } from "../lib/db/queries/users";
 
 export async function handlerLogin(cmdName: string, ...args: string[]) {
     if (args.length !== 1) {
@@ -29,4 +29,17 @@ export async function handlerRegister(cmdName: string, ...args: string[]) {
 
     setUser(user.name);
     console.log("User created successfully!");
+}
+
+export async function handlerListUsers(_: string) {
+    const users = await getUsers();
+    const config = readConfig();
+
+    for (let user of users) {
+        if (user.name === config.currentUserName) {
+            console.log(`* ${user.name} (current)`);
+            continue;
+        }
+        console.log(`* ${user.name}`);
+    }
 }
