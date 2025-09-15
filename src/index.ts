@@ -9,7 +9,7 @@ import {
     handlerListUsers,
 } from "./commands/users";
 import { handlerReset } from "./commands/reset";
-import { handlerAggregate } from "./commands/aggregator";
+import { handlerAgg } from "./commands/aggregate";
 
 async function main() {
     const args = process.argv.slice(2);
@@ -27,7 +27,7 @@ async function main() {
     registerCommand(commandsRegistry, "register", handlerRegister);
     registerCommand(commandsRegistry, "reset", handlerReset);
     registerCommand(commandsRegistry, "users", handlerListUsers);
-    registerCommand(commandsRegistry, "agg", handlerAggregate);
+    registerCommand(commandsRegistry, "agg", handlerAgg);
 
     try {
         await runCommand(commandsRegistry, cmdName, ...cmdArgs);
