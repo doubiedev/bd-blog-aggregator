@@ -9,6 +9,7 @@ export const users = pgTable("users", {
         .$onUpdate(() => new Date()),
     name: text("name").notNull().unique(),
 });
+
 export type User = typeof users.$inferSelect;
 
 export const feeds = pgTable("feeds", {
@@ -24,4 +25,5 @@ export const feeds = pgTable("feeds", {
         .references(() => users.id, { onDelete: "cascade" })
         .notNull(),
 });
+
 export type Feed = typeof feeds.$inferSelect;

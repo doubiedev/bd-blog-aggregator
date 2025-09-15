@@ -1,45 +1,36 @@
 import { readConfig } from "src/config";
+import { createFeed } from "src/lib/db/queries/feeds";
 import { getUser } from "src/lib/db/queries/users";
-import { getFeed, getFeeds, createFeed } from "src/lib/db/queries/feeds";
 import { Feed, User } from "src/lib/db/schema";
 
 export async function handlerAddFeed(cmdName: string, ...args: string[]) {
     if (args.length !== 2) {
-        throw new Error(`usage: ${cmdName} <feed-name> <feed-url>`);
+        throw new Error(`usage: ${cmdName} <feed_name> <url>`);
     }
 
     const userName = readConfig().currentUserName;
-    const existingUser = await getUser(userName);
-    if (!existingUser) {
+    const user = await getUser(userName);
+    if (!user) {
         throw new Error(`User ${userName} not found`);
     }
-    const userId = existingUser.id;
 
     const feedName = args[0];
     const feedURL = args[1];
 
-    const feed = await createFeed(feedName, feedURL, userId);
-    console.log("Feed created successfully!");
-    await printFeed(feed, existingUser);
+    const feed = await createFeed(feedName, feedURL, user.id);
+    if (!feed) {
+        throw new Error(`Failed to create feed`);
+    }
+
+    console.log("Feed created successfully:");
+    printFeed(feed, user);
 }
 
-async function printFeed(feed: Feed, user: User) {
-    console.log(
-        `Feed:
-id - ${feed.id}
-createdAt - ${feed.createdAt}
-updatedAt - ${feed.updatedAt}
-name - ${feed.name}
-url - ${feed.url}
-userId - ${feed.userId}
-`,
-    );
-    console.log(
-        `User:
-id - ${user.id}
-createdAt - ${user.createdAt}
-updatedAt - ${user.updatedAt}
-name - ${user.name}
-`,
-    );
+function printFeed(feed: Feed, user: User) {
+    console.log(`* ID:            ${feed.id}`);
+    console.log(`* Created:       ${feed.createdAt}`);
+    console.log(`* Updated:       ${feed.updatedAt}`);
+    console.log(`* name:          ${feed.name}`);
+    console.log(`* URL:           ${feed.url}`);
+    console.log(`* User:          ${user.name}`);
 }
