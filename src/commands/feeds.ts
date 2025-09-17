@@ -1,5 +1,5 @@
 import { readConfig } from "src/config";
-import { createFeed } from "src/lib/db/queries/feeds";
+import { createFeed, getFeeds } from "src/lib/db/queries/feeds";
 import { getUser } from "src/lib/db/queries/users";
 import { Feed, User } from "src/lib/db/schema";
 
@@ -33,4 +33,18 @@ function printFeed(feed: Feed, user: User) {
     console.log(`* name:          ${feed.name}`);
     console.log(`* URL:           ${feed.url}`);
     console.log(`* User:          ${user.name}`);
+}
+
+export async function handlerPrintFeeds(cmdName: string, ...args: string[]) {
+    if (args.length !== 0) {
+        throw new Error(`usage: ${cmdName}`);
+    }
+
+    const feeds = await getFeeds();
+
+    for (let feed of feeds) {
+        console.log(`* name:          ${feed.name}`);
+        console.log(`* URL:           ${feed.url}`);
+        console.log(`* User:          ${feed.userName}`);
+    }
 }
