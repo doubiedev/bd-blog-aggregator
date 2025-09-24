@@ -7,10 +7,15 @@ import {
     handlerLogin,
     handlerRegister,
     handlerListUsers,
+    handlerListFollowedFeeds,
 } from "./commands/users";
 import { handlerReset } from "./commands/reset";
 import { handlerAgg } from "./commands/aggregate";
-import { handlerAddFeed, handlerListFeeds } from "./commands/feeds";
+import {
+    handlerAddFeed,
+    handlerListFeeds,
+    handlerFollowFeed,
+} from "./commands/feeds";
 
 async function main() {
     const args = process.argv.slice(2);
@@ -31,6 +36,8 @@ async function main() {
     registerCommand(commandsRegistry, "agg", handlerAgg);
     registerCommand(commandsRegistry, "addfeed", handlerAddFeed);
     registerCommand(commandsRegistry, "feeds", handlerListFeeds);
+    registerCommand(commandsRegistry, "follow", handlerFollowFeed);
+    registerCommand(commandsRegistry, "following", handlerListFollowedFeeds);
 
     try {
         await runCommand(commandsRegistry, cmdName, ...cmdArgs);
