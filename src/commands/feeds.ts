@@ -1,28 +1,33 @@
-import { createFeed, getFeedByURL, getFeeds } from "src/lib/db/queries/feeds";
-import { createFeedFollow } from "src/lib/db/queries/feedsUsers";
-import { getUserById } from "src/lib/db/queries/users";
+import { readConfig } from "src/config";
+import { createFeed, getFeeds } from "../lib/db/queries/feeds";
+import { getUser, getUserById } from "../lib/db/queries/users";
 import { Feed, User } from "src/lib/db/schema";
-import { getLoggedInUser } from "./users";
+import { createFeedFollow } from "src/lib/db/queries/feed-follows";
+import { printFeedFollow } from "./feed-follows";
 
 export async function handlerAddFeed(cmdName: string, ...args: string[]) {
     if (args.length !== 2) {
         throw new Error(`usage: ${cmdName} <feed_name> <url>`);
     }
 
-    const user = await getLoggedInUser();
+    const config = readConfig();
+    const user = await getUser(config.currentUserName);
+
+    if (!user) {
+        throw new Error(`User ${config.currentUserName} not found`);
+    }
 
     const feedName = args[0];
-    const feedURL = args[1];
+    const url = args[1];
 
-    const feed = await createFeed(feedName, feedURL, user.id);
+    const feed = await createFeed(feedName, url, user.id);
     if (!feed) {
         throw new Error(`Failed to create feed`);
     }
 
     const feedFollow = await createFeedFollow(user.id, feed.id);
-    if (!feedFollow) {
-        throw new Error(`Failed to create feedFollow`);
-    }
+
+    printFeedFollow(user.name, feedFollow.feedName);
 
     console.log("Feed created successfully:");
     printFeed(feed, user);
@@ -45,33 +50,14 @@ export async function handlerListFeeds(_: string) {
         return;
     }
 
-    console.log(`Found ${feeds.length} feeds:\n`);
+    console.log(`Found %d feeds:\n`, feeds.length);
     for (let feed of feeds) {
         const user = await getUserById(feed.userId);
         if (!user) {
-            throw new Error(`Failed to find user for feed: ${feed.id}`);
+            throw new Error(`Failed to find user for feed ${feed.id}`);
         }
 
         printFeed(feed, user);
         console.log(`=====================================`);
     }
-}
-
-export async function handlerFollowFeed(cmdName: string, ...args: string[]) {
-    if (args.length !== 1) {
-        throw new Error(`usage: ${cmdName} <url>`);
-    }
-
-    const url = args[0];
-    const feed = await getFeedByURL(url);
-    const user = await getLoggedInUser();
-
-    const feedFollow = await createFeedFollow(user.id, feed.id);
-    if (!feedFollow) {
-        throw new Error(`Failed to follow feed`);
-    }
-
-    console.log(
-        `Feed ${feedFollow.feedName} followed successfully by ${feedFollow.userName}`,
-    );
 }

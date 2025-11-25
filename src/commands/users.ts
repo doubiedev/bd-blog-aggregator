@@ -1,4 +1,4 @@
-import { getFeedFollowsForUser } from "src/lib/db/queries/feedsUsers";
+import { getFeedFollowsForUser } from "src/lib/db/queries/feed-follows";
 import { readConfig, setUser } from "../config";
 import { createUser, getUser, getUsers } from "../lib/db/queries/users";
 

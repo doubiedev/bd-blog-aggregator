@@ -1,0 +1,1 @@
+DROP INDEX "feed_follows_idx";

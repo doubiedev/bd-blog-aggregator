@@ -1,10 +1,4 @@
-import {
-    pgTable,
-    timestamp,
-    uuid,
-    text,
-    uniqueIndex,
-} from "drizzle-orm/pg-core";
+import { pgTable, timestamp, uuid, text, unique } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
     id: uuid("id").primaryKey().defaultRandom().notNull(),
@@ -50,5 +44,5 @@ export const feedFollows = pgTable(
             .references(() => feeds.id, { onDelete: "cascade" })
             .notNull(),
     },
-    (t) => [uniqueIndex("feed_follows_idx").on(t.userId, t.feedId)],
+    (t) => [{ unq: unique().on(t.userId, t.feedId) }],
 );
