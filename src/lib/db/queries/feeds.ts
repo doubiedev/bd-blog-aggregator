@@ -26,18 +26,21 @@ export async function getFeedByURL(url: string) {
 }
 
 export async function markFeedFetched(feedId: string) {
-    const [result] = await db
+    const result = await db
         .update(feeds)
-        .set({ updatedAt: sql`NOW()`, lastFetchedAt: sql`NOW()` })
-        .where(eq(feeds.id, feedId));
-    return result;
+        .set({
+            lastFetchAt: new Date(),
+        })
+        .where(eq(feeds.id, feedId))
+        .returning();
+    return firstOrUndefined(result);
 }
 
 export async function getNextFeedToFetch() {
-    const [result] = await db
+    const result = await db
         .select()
         .from(feeds)
-        .orderBy(sql`${feeds.lastFetchedAt} NULLS FIRST`)
+        .orderBy(sql`${feeds.lastFetchAt} desc nulls first`)
         .limit(1);
-    return result;
+    return firstOrUndefined(result);
 }

@@ -1,24 +1,28 @@
 import { getNextFeedToFetch, markFeedFetched } from "src/lib/db/queries/feeds";
-import { fetchFeed, RSSFeed } from "../lib/rss";
+import { fetchFeed } from "../lib/rss";
 import { Feed } from "src/lib/db/schema";
+import { parseDuration } from "src/lib/time";
 
 export async function handlerAgg(cmdName: string, ...args: string[]) {
-    // const feedURL = "https://www.wagslane.dev/index.xml";
-    //
-    // const feedData = await fetchFeed(feedURL);
-    // const feedDataStr = JSON.stringify(feedData, null, 2);
-    // console.log(feedDataStr);
-
-    if (!args[0]) {
-        throw new Error(`usage: ${cmdName} <duration><unit (ms, s, m, h)>`);
+    if (args.length !== 1) {
+        throw new Error(`usage: ${cmdName} <time_between_reqs>`);
     }
-    const timeBetweenRequests = parseDuration(args[0]);
-    console.log(`Collecting feeds every ${args[0]}`);
 
-    await scrapeFeeds();
+    const timeArg = args[0];
+    const timeBetweenRequests = parseDuration(timeArg);
+    if (!timeBetweenRequests) {
+        throw new Error(
+            `invalid duration: ${timeArg} — use format 1h 30m 15s or 3500ms`,
+        );
+    }
+
+    console.log(`Collecting feeds every ${timeArg}...`);
+
+    // run the first scrape immediately
+    scrapeFeeds().catch(handleError);
 
     const interval = setInterval(() => {
-        scrapeFeeds().catch(console.error);
+        scrapeFeeds().catch(handleError);
     }, timeBetweenRequests);
 
     await new Promise<void>((resolve) => {
@@ -30,44 +34,28 @@ export async function handlerAgg(cmdName: string, ...args: string[]) {
     });
 }
 
-function parseDuration(durationStr: string): number {
-    const regex = /^(\d+)(ms|s|m|h)$/;
-    const match = durationStr.match(regex);
-    if (!match) {
-        throw new Error(
-            `invalid time_between_reqs format, use: <duration><unit (ms, s, m, h)>`,
-        );
-    }
-    const amount = Number(match[1]);
-    const unit = match[2]; // "ms" | "s" | "m" | "h"
-    switch (unit) {
-        case "ms":
-            return amount;
-        case "s":
-            return amount * 1000;
-        case "m":
-            return amount * 1000 * 60;
-        case "h":
-            return amount * 1000 * 60 * 60;
-        default:
-            throw new Error("unsupported time unit");
-    }
-}
-
 async function scrapeFeeds() {
-    const nextFeed: Feed | undefined = await getNextFeedToFetch();
-    if (!nextFeed) {
-        console.log("No feeds found to fetch");
+    const feed = await getNextFeedToFetch();
+    if (!feed) {
+        console.log(`No feeds to fetch.`);
         return;
     }
-    await markFeedFetched(nextFeed.id);
+    console.log(`Found a feed to fetch!`);
+    scrapeFeed(feed);
+}
 
-    try {
-        const feed: RSSFeed = await fetchFeed(nextFeed.url);
-        for (let i = 0; i < feed.channel.item.length; i++) {
-            console.log(feed.channel.item[i].title);
-        }
-    } catch (err) {
-        console.error(err);
-    }
+async function scrapeFeed(feed: Feed) {
+    await markFeedFetched(feed.id);
+
+    const feedData = await fetchFeed(feed.url);
+
+    console.log(
+        `Feed ${feed.name} collected, ${feedData.channel.item.length} posts found`,
+    );
+}
+
+function handleError(err: unknown) {
+    console.error(
+        `Error scraping feeds: ${err instanceof Error ? err.message : err}`,
+    );
 }
