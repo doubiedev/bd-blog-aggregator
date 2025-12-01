@@ -10,8 +10,13 @@ export async function createFeed(
 ) {
     const result = await db
         .insert(feeds)
-        .values({ name: feedName, url, userId })
+        .values({
+            name: feedName,
+            url,
+            userId,
+        })
         .returning();
+
     return firstOrUndefined(result);
 }
 

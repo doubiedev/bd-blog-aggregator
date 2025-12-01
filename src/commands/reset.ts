@@ -1,10 +1,6 @@
 import { deleteUsers } from "../lib/db/queries/users";
 
-export async function handlerReset(cmdName: string, ...args: string[]) {
-    if (args.length !== 0) {
-        throw new Error(`usage: ${cmdName}`);
-    }
-
+export async function handlerReset(_: string) {
     await deleteUsers();
-    console.log("Reset Users successfully!");
+    console.log("Database reset successfully!");
 }

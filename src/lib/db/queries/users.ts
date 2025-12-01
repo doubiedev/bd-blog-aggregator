@@ -18,7 +18,7 @@ export async function deleteUsers() {
 }
 
 export async function getUsers() {
-    return await db.select().from(users);
+    return db.select().from(users);
 }
 
 export async function getUserById(id: string) {

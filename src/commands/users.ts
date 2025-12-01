@@ -1,5 +1,4 @@
-import { getFeedFollowsForUser } from "src/lib/db/queries/feed-follows";
-import { readConfig, setUser } from "../config";
+import { setUser, readConfig } from "../config";
 import { createUser, getUser, getUsers } from "../lib/db/queries/users";
 
 export async function handlerLogin(cmdName: string, ...args: string[]) {
@@ -18,7 +17,7 @@ export async function handlerLogin(cmdName: string, ...args: string[]) {
 }
 
 export async function handlerRegister(cmdName: string, ...args: string[]) {
-    if (args.length !== 1) {
+    if (args.length != 1) {
         throw new Error(`usage: ${cmdName} <name>`);
     }
 
@@ -42,24 +41,5 @@ export async function handlerListUsers(_: string) {
             continue;
         }
         console.log(`* ${user.name}`);
-    }
-}
-
-export async function getLoggedInUser() {
-    const userName = readConfig().currentUserName;
-    const user = await getUser(userName);
-    if (!user) {
-        throw new Error(`User ${userName} not found`);
-    }
-    return user;
-}
-
-export async function handlerListFollowedFeeds(_: string) {
-    const user = await getLoggedInUser();
-    const feedFollows = await getFeedFollowsForUser(user.id);
-
-    console.log(`${user.name} is currently following:`);
-    for (let feedFollow of feedFollows) {
-        console.log(`* ${feedFollow.feedName}`);
     }
 }

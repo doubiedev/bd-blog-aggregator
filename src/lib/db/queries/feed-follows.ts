@@ -39,7 +39,7 @@ export async function getFeedFollowsForUser(userId: string) {
             updatedAT: feedFollows.updatedAt,
             userId: feedFollows.userId,
             feedId: feedFollows.feedId,
-            feedName: feeds.name,
+            feedname: feeds.name,
         })
         .from(feedFollows)
         .innerJoin(feeds, eq(feedFollows.feedId, feeds.id))

@@ -4,9 +4,9 @@ import {
     runCommand,
 } from "./commands/commands";
 import {
+    handlerListUsers,
     handlerLogin,
     handlerRegister,
-    handlerListUsers,
 } from "./commands/users";
 import { handlerReset } from "./commands/reset";
 import { handlerAgg } from "./commands/aggregate";
@@ -17,6 +17,7 @@ import {
     handlerUnfollow,
 } from "./commands/feed-follows";
 import { middlewareLoggedIn } from "./middleware";
+import { handlerBrowse } from "./commands/browse";
 
 async function main() {
     const args = process.argv.slice(2);
@@ -55,6 +56,11 @@ async function main() {
         commandsRegistry,
         "unfollow",
         middlewareLoggedIn(handlerUnfollow),
+    );
+    registerCommand(
+        commandsRegistry,
+        "browse",
+        middlewareLoggedIn(handlerBrowse),
     );
 
     try {
